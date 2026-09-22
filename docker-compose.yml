@@ -1,14 +1,19 @@
 services:
 
   db:
-    image: postgres
+    image: postgres:alpine
     restart: always
     shm_size: 128mb
-    environment:
-      POSTGRES_PASSWORD: example
-
-  adminer:
-    image: adminer
-    restart: always
+    env_file: ".env"
+    volumes:
+      - postgres_data:/var/lib/postgresql
     ports:
-      - 8080:8080
+      - 5432:5432
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
+volumes:
+  postgres_data:
