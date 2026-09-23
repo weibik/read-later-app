@@ -3,14 +3,15 @@ import db from '../db/db'
 import { users } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
+import * as jose from 'jose'
 
-const app = new Hono()
+const app_auth = new Hono()
 
-app.get('/healthcheck', (c) => {
+app_auth.get('/healthcheck', (c) => {
   return c.json({ message: 'healthcheck' })
 })
 
-app.post('/register', async (c) => {
+app_auth.post('/register', async (c) => {
   const { username, password } = await c.req.json();
   const result = await db.select().from(users).where(eq(users.username, username))
   if (result.length === 0) {
@@ -26,12 +27,19 @@ app.post('/register', async (c) => {
   }
 })
 
-app.post('login', async (c) => {
+app_auth.post('/login', async (c) => {
   const { username, password } = await c.req.json();
   const user_result = await db.select().from(users).where(eq(users.username, username))
   if (user_result.length > 0) {
-    if (bcrypt.compare(password, hashed_password)) {
-      return c.json({ message: 'Logged in succesfully' }, 200)
+    if (await bcrypt.compare(password, user_result[0].password)) {
+      const alg = 'HS256'
+      const jwt = await new jose.SignJWT({ userId: user_result[0].id })
+        .setProtectedHeader({ alg })
+        .setIssuedAt()
+        .setExpirationTime('2h')
+        .sign(new TextEncoder().encode(process.env.SECRET!))
+
+      return c.json({ message: 'Logged in succesfully', jwt }, 200)
     }
     else {
       return c.json({ message: 'Username or password incorrect' }, 401)
@@ -42,4 +50,4 @@ app.post('login', async (c) => {
   }
 })
 
-export default app
+export default app_auth

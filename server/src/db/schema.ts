@@ -1,4 +1,4 @@
-import { integer, pgTable, pgEnum, serial, text, primaryKey} from 'drizzle-orm/pg-core'
+import { integer, pgTable, pgEnum, serial, text, } from 'drizzle-orm/pg-core'
 
 export const statusEnum = pgEnum('status', ['pending', 'complete']);
 

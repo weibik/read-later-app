@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "dependencies": {
+    "@hono/node-server": "^2.1.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/pg": "^8.23.1",
     "bcryptjs": "^3.0.3",
@@ -11,5 +12,11 @@
     "hono": "^4.13.8",
     "jose": "^6.2.12",
     "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts"
   }
 }
