@@ -1,0 +1,1 @@
+cross-env DISABLE_TYPESCRIPT_ESLINT_TS_VERSION_CHECK=true TSESTREE_NO_TS_VERSION_CHECK=true pnpm exec lint-staged
