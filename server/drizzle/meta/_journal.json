@@ -8,6 +8,13 @@
       "when": 1790029602626,
       "tag": "0000_purple_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790179196160,
+      "tag": "0001_tricky_ego",
+      "breakpoints": true
     }
   ]
 }

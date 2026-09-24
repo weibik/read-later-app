@@ -1,4 +1,11 @@
-import { integer, pgTable, pgEnum, serial, text } from 'drizzle-orm/pg-core';
+import {
+  integer,
+  pgTable,
+  pgEnum,
+  serial,
+  text,
+  primaryKey,
+} from 'drizzle-orm/pg-core';
 
 export const statusEnum = pgEnum('status', ['pending', 'complete']);
 
@@ -10,11 +17,12 @@ export const users = pgTable('users', {
 
 export const bookmarks = pgTable('bookmarks', {
   id: serial('id').primaryKey(),
+  url: text('url').notNull(),
   status: statusEnum('status').notNull(),
   title: text('title'),
   description: text('description'),
   image: text('image'),
-  user_id: integer('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id),
 });
 
 export const tags = pgTable('tags', {

@@ -1,0 +1,1 @@
+ALTER TABLE "bookmarks" ADD COLUMN "url" text NOT NULL;
