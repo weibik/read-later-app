@@ -62,7 +62,7 @@ importers:
         version: 3.0.3
       bullmq:
         specifier: ^6.3.8
-        version: 6.3.8(ioredis@6.0.0)(pg@8.23.0)
+        version: 6.3.8(ioredis@6.0.0)(pg@8.23.0)(redis@6.2.1)
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
@@ -84,6 +84,9 @@ importers:
       pg:
         specifier: ^8.23.0
         version: 8.23.0
+      redis:
+        specifier: ^6.2.1
+        version: 6.2.1
     devDependencies:
       tsx:
         specifier: ^4.23.15
@@ -1501,6 +1504,57 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@redis/bloom@6.2.1':
+    resolution:
+      {
+        integrity: sha512-huQgNLaCIZfQ9SeLn4q9124uOUd8HbZDYHwwUzNcRgHqCHiHKl2dDxMqJCeWh8cMqZAoWuHR8XnWbDMIf+o7ag==,
+      }
+    engines: { node: '>= 20.0.0' }
+    peerDependencies:
+      '@redis/client': ^6.2.1
+
+  '@redis/client@6.2.1':
+    resolution:
+      {
+        integrity: sha512-LzxBY7SIBvvJiyCgcaJZZakE3fJrZZ++i24+EDW9fKpCl68D35uJcKFpZZwCfOoG9WZTbyZlMzMeM0gtOAMU9Q==,
+      }
+    engines: { node: '>= 20.0.0' }
+    peerDependencies:
+      '@node-rs/xxhash': ^1.1.0
+      '@opentelemetry/api': '>=1 <2'
+    peerDependenciesMeta:
+      '@node-rs/xxhash':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+
+  '@redis/json@6.2.1':
+    resolution:
+      {
+        integrity: sha512-AFIUJ8Gj0DaaSBHYuSt8+O0oYWM+50OK1c0OmodB7XERIA8+BbyV3O4v76f9iccWasd1/7qjfZTpuzexUaZtrQ==,
+      }
+    engines: { node: '>= 20.0.0' }
+    peerDependencies:
+      '@redis/client': ^6.2.1
+
+  '@redis/search@6.2.1':
+    resolution:
+      {
+        integrity: sha512-2vfOAOyYFE7UUw3sBBlkqqruBtOUS4HRY5MtW4hp83llrwvtrTE4r22CEqXddlV+54zkLxBE4nmsIJ/dpezQrQ==,
+      }
+    engines: { node: '>= 20.0.0' }
+    peerDependencies:
+      '@redis/client': ^6.2.1
+
+  '@redis/time-series@6.2.1':
+    resolution:
+      {
+        integrity: sha512-kiYniph04dJOole+L359B6C9E+jYS2uDP7hca6Onj0xF38ZIpyxARO0Iq0W4ZRn1e8Q6vqW00QFZVSMRA/2Ijw==,
+      }
+    engines: { node: '>= 20.0.0' }
+    peerDependencies:
+      '@redis/client': ^6.2.1
+
   '@tybys/wasm-util@0.10.4':
     resolution:
       {
@@ -1754,6 +1808,13 @@ packages:
     resolution:
       {
         integrity: sha512-rwHwUfXL40Chm1r08yrhU3qpUvdVlgkKNeyeGPOxnW8/SyVDvgRaed/Uz54AqWNaTCAThlj6QAs3TZcKI0xDEw==,
+      }
+    engines: { node: '>=0.10.0' }
+
+  cluster-key-slot@1.1.2:
+    resolution:
+      {
+        integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==,
       }
     engines: { node: '>=0.10.0' }
 
@@ -2688,6 +2749,13 @@ packages:
       }
     engines: { node: '>=4' }
 
+  redis@6.2.1:
+    resolution:
+      {
+        integrity: sha512-Z9VHtgYs48PiQC77X9O2Er8Hj4T+5BtFjT91/vi5Is1D04N72cA946ZslM1ImJw8ZctFBZWAVjM7S5wJNeHMpg==,
+      }
+    engines: { node: '>= 20.0.0' }
+
   resolve-pkg-maps@1.0.0:
     resolution:
       {
@@ -3553,6 +3621,26 @@ snapshots:
   '@oxc-resolver/binding-win32-x64-msvc@11.24.2':
     optional: true
 
+  '@redis/bloom@6.2.1(@redis/client@6.2.1)':
+    dependencies:
+      '@redis/client': 6.2.1
+
+  '@redis/client@6.2.1':
+    dependencies:
+      cluster-key-slot: 1.1.2
+
+  '@redis/json@6.2.1(@redis/client@6.2.1)':
+    dependencies:
+      '@redis/client': 6.2.1
+
+  '@redis/search@6.2.1(@redis/client@6.2.1)':
+    dependencies:
+      '@redis/client': 6.2.1
+
+  '@redis/time-series@6.2.1(@redis/client@6.2.1)':
+    dependencies:
+      '@redis/client': 6.2.1
+
   '@tybys/wasm-util@0.10.4':
     dependencies:
       tslib: 2.8.1
@@ -3704,7 +3792,7 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
-  bullmq@6.3.8(ioredis@6.0.0)(pg@8.23.0):
+  bullmq@6.3.8(ioredis@6.0.0)(pg@8.23.0)(redis@6.2.1):
     dependencies:
       cron-parser: 5.10.1
       msgpackr: 2.1.0
@@ -3714,6 +3802,7 @@ snapshots:
     optionalDependencies:
       ioredis: 6.0.0
       pg: 8.23.0
+      redis: 6.2.1
 
   cacheable@2.5.0:
     dependencies:
@@ -3750,6 +3839,8 @@ snapshots:
 
   cluster-key-slot@1.1.1:
     optional: true
+
+  cluster-key-slot@1.1.2: {}
 
   convert-source-map@2.0.0: {}
 
@@ -4344,6 +4435,17 @@ snapshots:
 
   redis-errors@1.2.0:
     optional: true
+
+  redis@6.2.1:
+    dependencies:
+      '@redis/bloom': 6.2.1(@redis/client@6.2.1)
+      '@redis/client': 6.2.1
+      '@redis/json': 6.2.1(@redis/client@6.2.1)
+      '@redis/search': 6.2.1(@redis/client@6.2.1)
+      '@redis/time-series': 6.2.1(@redis/client@6.2.1)
+    transitivePeerDependencies:
+      - '@node-rs/xxhash'
+      - '@opentelemetry/api'
 
   resolve-pkg-maps@1.0.0: {}
 

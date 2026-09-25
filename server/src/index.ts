@@ -3,8 +3,9 @@ import bookmarks_app from './routes/bookmarks';
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { authMiddleware } from './middleware/middleware';
+import { appVariables } from './types';
 
-const app = new Hono();
+const app = new Hono<{ Variables: appVariables }>();
 app.use('/bookmarks/*', authMiddleware);
 app.route('/auth', app_auth);
 app.route('/bookmarks', bookmarks_app);

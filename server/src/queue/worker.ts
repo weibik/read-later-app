@@ -3,14 +3,16 @@ import db from '../db/db';
 import * as cheerio from 'cheerio';
 import { bookmarks } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import { delCachedBookmarks } from '../cache/helpers';
 
 new Worker(
   'bookmarksQueue',
   async (job) => {
     try {
-      const { url, id } = job.data;
-      const bookmarkId = parseInt(id);
       console.log(`Processing job for bookmark ${id}: ${url}`);
+      const { rawUserId, url, id } = job.data;
+      const userId = parseInt(rawUserId);
+      const bookmarkId = parseInt(id);
       const response = await fetch(url);
       const rawHtml = await response.text();
       const $ = cheerio.load(rawHtml);
@@ -34,6 +36,7 @@ new Worker(
           status: 'complete',
         })
         .where(eq(bookmarks.id, bookmarkId));
+      await delCachedBookmarks(userId);
     } catch (error) {
       console.error('Worker error:', error);
       throw error;

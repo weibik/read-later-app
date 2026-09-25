@@ -13,7 +13,9 @@ export async function setCachedBookmarks(
   userId: number,
   bookmarksList: Array<typeof bookmarks.$inferSelect>,
 ) {
-  await redisClient.set(`bookmarks:${userId}`, JSON.stringify(bookmarksList));
+  await redisClient.set(`bookmarks:${userId}`, JSON.stringify(bookmarksList), {
+    EX: 3600,
+  });
 }
 
 export async function delCachedBookmarks(userId: number) {
