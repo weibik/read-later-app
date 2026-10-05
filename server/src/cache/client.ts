@@ -4,6 +4,6 @@ const redisClient: RedisClientType = createClient({
   url: 'redis://localhost:6379',
 });
 redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
-await redisClient.connect();
+redisClient.connect().catch(console.error);
 
 export default redisClient;

@@ -4,8 +4,10 @@ import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { authMiddleware } from './middleware/middleware';
 import { appVariables } from './types';
+import { cors } from 'hono/cors';
 
 const app = new Hono<{ Variables: appVariables }>();
+app.use('*', cors({ origin: 'http://localhost:5173' }));
 app.use('/bookmarks/*', authMiddleware);
 app.route('/auth', app_auth);
 app.route('/bookmarks', bookmarks_app);
