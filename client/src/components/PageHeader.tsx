@@ -1,4 +1,4 @@
-function Header() {
+function PageHeader() {
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="mx-auto max-w-5xl px-5">
@@ -8,4 +8,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default PageHeader;
