@@ -6,23 +6,48 @@ import PageHeader from '../components/PageHeader';
 
 type AuthPageProps = {
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
 };
 
-function AuthPage({ login }: AuthPageProps) {
+const copy: Record<
+  'login' | 'register',
+  { heading: string; button: string; switchText: string }
+> = {
+  login: {
+    heading: 'Log in',
+    button: 'Log in',
+    switchText: 'No account? Register',
+  },
+  register: {
+    heading: 'Create account',
+    button: 'Register',
+    switchText: 'Already have an account? Log in',
+  },
+};
+
+function AuthPage({ login, register }: AuthPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await login(username, password);
+      if (mode === 'login') {
+        await login(username, password);
+      } else {
+        await register(username, password);
+      }
       setError(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError('Wrong username or password.');
+      } else if (err instanceof ApiError && err.status === 409) {
+        setError('That username’s already taken. Try another.');
       } else {
         setError('Something went wrong');
+        console.error(err);
       }
     }
   }
@@ -34,7 +59,7 @@ function AuthPage({ login }: AuthPageProps) {
         className="mx-auto mt-10 w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 flex flex-col gap-3"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-lg font-medium">Log in</h2>
+        <h2 className="text-lg font-medium">{copy[mode].heading}</h2>
         <TextField
           id="username"
           label="Username"
@@ -59,7 +84,17 @@ function AuthPage({ login }: AuthPageProps) {
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           type="submit"
         >
-          Log in
+          {copy[mode].button}
+        </button>
+        <button
+          type="button"
+          className="text-center text-sm text-gray-600 underline hover:text-gray-900"
+          onClick={() => {
+            setMode(mode === 'login' ? 'register' : 'login');
+            setError(null);
+          }}
+        >
+          {copy[mode].switchText}
         </button>
       </form>
     </div>

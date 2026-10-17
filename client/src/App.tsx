@@ -3,10 +3,10 @@ import FeedPage from './pages/FeedPage';
 import AuthPage from './pages/AuthPage';
 
 function App() {
-  const { token, login, logout } = useAuth();
+  const { token, login, register, logout } = useAuth();
 
   if (!token) {
-    return <AuthPage login={login} />;
+    return <AuthPage login={login} register={register} />;
   } else {
     return <FeedPage logout={logout} />;
   }

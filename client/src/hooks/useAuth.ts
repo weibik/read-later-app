@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { api } from '../api/client';
 
-type LoginResponse = { message: string; jwt: string };
+type LoginAuthResponse = { message: string; jwt: string };
+type RegisterAuthResponse = { message: string };
 
 export function useAuth() {
   const [token, setToken] = useState<string | null>(
@@ -9,7 +10,7 @@ export function useAuth() {
   );
 
   async function login(username: string, password: string) {
-    const data = await api<LoginResponse>('/auth/login', {
+    const data = await api<LoginAuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
@@ -17,10 +18,18 @@ export function useAuth() {
     setToken(data.jwt);
   }
 
+  async function register(username: string, password: string) {
+    await api<RegisterAuthResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+    await login(username, password);
+  }
+
   function logout() {
     localStorage.removeItem('token');
     setToken(null);
   }
 
-  return { token, login, logout };
+  return { token, login, register, logout };
 }
