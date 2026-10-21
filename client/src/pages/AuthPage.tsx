@@ -3,6 +3,7 @@ import { ApiError } from '../api/client';
 import TextField from '../components/TextField';
 import ErrorMessage from '../components/ErrorMessage';
 import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
 
 type AuthPageProps = {
   login: (username: string, password: string) => Promise<void>;
@@ -80,12 +81,9 @@ function AuthPage({ login, register }: AuthPageProps) {
           }}
         />
         {error && <ErrorMessage message={error} />}
-        <button
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          type="submit"
-        >
+        <Button type="submit" className="w-full">
           {copy[mode].button}
-        </button>
+        </Button>
         <button
           type="button"
           className="text-center text-sm text-gray-600 underline hover:text-gray-900"
