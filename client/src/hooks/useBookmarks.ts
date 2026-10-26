@@ -24,5 +24,13 @@ export function useBookmarks() {
     loadBookmarks();
   }, []);
 
-  return { bookmarks, isLoading, error };
+  async function addBookmark(url: string) {
+    const created = await api<Bookmark>('/bookmarks', {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    });
+    setBookmarks((prev) => [created, ...prev]);
+  }
+
+  return { bookmarks, isLoading, error, addBookmark };
 }
