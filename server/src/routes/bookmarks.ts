@@ -53,6 +53,7 @@ bookmarks_app.get('/', async (c) => {
       description: bookmarks.description,
       image: bookmarks.image,
       createdAt: bookmarks.createdAt,
+      userId: bookmarks.userId,
       tagName: tags.name,
     })
     .from(bookmarks)
