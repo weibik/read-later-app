@@ -4,10 +4,11 @@ import {
   pgEnum,
   serial,
   text,
+  timestamp,
   primaryKey,
 } from 'drizzle-orm/pg-core';
 
-export const statusEnum = pgEnum('status', ['pending', 'complete']);
+export const statusEnum = pgEnum('status', ['pending', 'complete', 'failed']);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -18,11 +19,14 @@ export const users = pgTable('users', {
 export const bookmarks = pgTable('bookmarks', {
   id: serial('id').primaryKey(),
   url: text('url').notNull(),
-  status: statusEnum('status').notNull(),
+  status: statusEnum('status').notNull().default('pending'),
   title: text('title'),
   description: text('description'),
   image: text('image'),
-  userId: integer('user_id').references(() => users.id),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 export const tags = pgTable('tags', {
@@ -33,8 +37,12 @@ export const tags = pgTable('tags', {
 export const bookmark_tags = pgTable(
   'bookmark_tags',
   {
-    bookmark_id: integer('bookmark_id'),
-    tag_id: integer('tag_id'),
+    bookmark_id: integer('bookmark_id')
+      .notNull()
+      .references(() => bookmarks.id, { onDelete: 'cascade' }),
+    tag_id: integer('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
   },
   (table) => [primaryKey({ columns: [table.bookmark_id, table.tag_id] })],
 );

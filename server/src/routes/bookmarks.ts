@@ -1,6 +1,3 @@
-// Build POST /bookmarks (saves URL immediately with status: "pending").
-// Build GET /bookmarks and DELETE /bookmarks/:id endpoints.
-
 import { Hono } from 'hono';
 import db from '../db/db';
 import { bookmarks } from '../db/schema';
