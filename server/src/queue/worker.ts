@@ -5,27 +5,30 @@ import { bookmarks } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { delCachedBookmarks } from '../cache/helpers';
 
-new Worker(
+const worker = new Worker(
   'bookmarksQueue',
   async (job) => {
     try {
+      const { userId: rawUserId, url, id } = job.data;
       console.log(`Processing job for bookmark ${id}: ${url}`);
-      const { rawUserId, url, id } = job.data;
       const userId = parseInt(rawUserId);
       const bookmarkId = parseInt(id);
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status}`);
+      }
       const rawHtml = await response.text();
       const $ = cheerio.load(rawHtml);
       const metadata = {
-        title: $('title').first().text().trim() || '',
+        title: $('title').first().text().trim() || null,
         description:
           $('meta[name="description"]').attr('content') ||
           $('meta[property="og:description"]').attr('content') ||
-          '',
+          null,
         image:
           $('meta[property="og:image"]').attr('content') ||
           $('meta[name="twitter:image"]').attr('content') ||
-          '',
+          null,
       };
       await db
         .update(bookmarks)
@@ -47,3 +50,17 @@ new Worker(
     connection: { host: 'localhost', port: 6379 },
   },
 );
+
+worker.on('failed', async (job) => {
+  if (!job) return;
+  if (job.attemptsMade < (job.opts.attempts ?? 1)) return;
+
+  const bookmarkId = parseInt(job.data.id);
+  const userId = parseInt(job.data.userId);
+
+  await db
+    .update(bookmarks)
+    .set({ status: 'failed' })
+    .where(eq(bookmarks.id, bookmarkId));
+  await delCachedBookmarks(userId);
+});
