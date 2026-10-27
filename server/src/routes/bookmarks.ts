@@ -12,12 +12,25 @@ import { appVariables } from '../types';
 
 const bookmarks_app = new Hono<{ Variables: appVariables }>();
 
+function isValidUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 bookmarks_app.post('/', async (c) => {
   const userId = c.get('userId');
   const { url } = await c.req.json();
   if (!url) {
     return c.json({ message: 'Webpage not found' }, 400);
   }
+  if (!isValidUrl(url)) {
+    return c.json({ message: 'Invalid URL' }, 400);
+  }
+
   const [bookmark] = await db
     .insert(bookmarks)
     .values({

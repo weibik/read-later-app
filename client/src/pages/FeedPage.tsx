@@ -13,10 +13,7 @@ function FeedPage({ logout }: { logout: () => void }) {
       <div className="mx-auto max-w-5xl px-5 flex flex-col gap-4 pt-4">
         {error && <ErrorMessage message={error} />}
         <AddForm onAdd={addBookmark} />
-        <BookmarkGrid bookmarks={bookmarks} />
-        <button onClick={() => deleteBookmark(bookmarks[0].id)}>
-          test delete
-        </button>
+        <BookmarkGrid bookmarks={bookmarks} onDelete={deleteBookmark} />
       </div>
     </div>
   );

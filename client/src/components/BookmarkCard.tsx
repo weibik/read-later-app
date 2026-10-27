@@ -42,7 +42,7 @@ function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
             rel="noopener noreferrer"
             className="after:absolute after:inset-0"
           >
-            {bookmark.title}
+            {bookmark.title || bookmark.url}
           </a>
         </div>
         <div className="text-sm text-gray-600 line-clamp-2">
