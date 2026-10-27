@@ -5,7 +5,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import { useBookmarks } from '../hooks/useBookmarks';
 
 function FeedPage({ logout }: { logout: () => void }) {
-  const { bookmarks, error, addBookmark } = useBookmarks();
+  const { bookmarks, error, addBookmark, deleteBookmark } = useBookmarks();
 
   return (
     <div className="bg-gray-50 min-h-screen text-gray-900">
@@ -14,6 +14,9 @@ function FeedPage({ logout }: { logout: () => void }) {
         {error && <ErrorMessage message={error} />}
         <AddForm onAdd={addBookmark} />
         <BookmarkGrid bookmarks={bookmarks} />
+        <button onClick={() => deleteBookmark(bookmarks[0].id)}>
+          test delete
+        </button>
       </div>
     </div>
   );

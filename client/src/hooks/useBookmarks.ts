@@ -54,5 +54,19 @@ export function useBookmarks() {
     setBookmarks((prev) => [created, ...prev]);
   }
 
-  return { bookmarks, isLoading, error, addBookmark };
+  async function deleteBookmark(id: number) {
+    const removed = bookmarks.find((b) => b.id === id);
+    if (!removed) return;
+
+    setBookmarks((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await api<Bookmark>(`/bookmarks/${id}`, {
+        method: 'DELETE',
+      });
+    } catch {
+      setBookmarks((prev) => [removed, ...prev]);
+    }
+  }
+
+  return { bookmarks, isLoading, error, addBookmark, deleteBookmark };
 }
