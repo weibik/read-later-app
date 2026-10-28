@@ -2,6 +2,7 @@ import { ImageOff, RefreshCw } from 'lucide-react';
 import type { Bookmark } from '../types';
 import BookmarkCardSkeleton from './BookmarkCardSkeleton';
 import DeleteButton from './DeleteButton';
+import { useState } from 'react';
 
 type BookmarkCardProps = {
   bookmark: Bookmark;
@@ -10,6 +11,8 @@ type BookmarkCardProps = {
 };
 
 function BookmarkCard({ bookmark, onDelete, onRetry }: BookmarkCardProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   if (bookmark.status === 'pending') {
     return <BookmarkCardSkeleton id={bookmark.id} onDelete={onDelete} />;
   }
@@ -17,11 +20,12 @@ function BookmarkCard({ bookmark, onDelete, onRetry }: BookmarkCardProps) {
   return (
     <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
       <DeleteButton id={bookmark.id} onDelete={onDelete} />
-      {bookmark.image ? (
+      {bookmark.image && !imageFailed ? (
         <img
           src={bookmark.image}
           alt=""
           className="aspect-video w-full object-cover"
+          onError={() => setImageFailed(true)}
         />
       ) : (
         <div className="aspect-video bg-gray-100 flex flex-col items-center justify-center text-gray-500">
