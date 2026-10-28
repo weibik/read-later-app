@@ -68,5 +68,30 @@ export function useBookmarks() {
     }
   }
 
-  return { bookmarks, isLoading, error, addBookmark, deleteBookmark };
+  async function retryBookmark(id: number) {
+    const bookmark = bookmarks.find((b) => b.id === id);
+    if (!bookmark) return;
+
+    const previousStatus = bookmark.status;
+    setBookmarks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, status: 'pending' } : b)),
+    );
+
+    try {
+      await api(`/bookmarks/${id}/retry`, { method: 'POST' });
+    } catch {
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: previousStatus } : b)),
+      );
+    }
+  }
+
+  return {
+    bookmarks,
+    isLoading,
+    error,
+    addBookmark,
+    deleteBookmark,
+    retryBookmark,
+  };
 }

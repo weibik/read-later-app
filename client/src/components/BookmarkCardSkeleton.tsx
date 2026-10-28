@@ -1,10 +1,18 @@
+import DeleteButton from './DeleteButton';
+
 function Bar({ className }: { className: string }) {
   return <div className={`rounded bg-gray-200 ${className}`} />;
 }
 
-function BookmarkCardSkeleton() {
+type BookmarkCardSkeletonProps = {
+  id: number;
+  onDelete: (id: number) => void;
+};
+
+function BookmarkCardSkeleton({ id, onDelete }: BookmarkCardSkeletonProps) {
   return (
-    <div className="animate-pulse overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="relative animate-pulse overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <DeleteButton id={id} onDelete={onDelete}></DeleteButton>
       <div className="aspect-video w-full bg-gray-200" />
       <div className="flex flex-col gap-2 p-3">
         <div className="flex flex-col gap-1.5">

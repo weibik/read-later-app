@@ -1,27 +1,22 @@
-import { ImageOff, Trash2 } from 'lucide-react';
+import { ImageOff, RefreshCw } from 'lucide-react';
 import type { Bookmark } from '../types';
 import BookmarkCardSkeleton from './BookmarkCardSkeleton';
+import DeleteButton from './DeleteButton';
 
 type BookmarkCardProps = {
   bookmark: Bookmark;
   onDelete: (id: number) => void;
+  onRetry: (id: number) => void;
 };
 
-function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
+function BookmarkCard({ bookmark, onDelete, onRetry }: BookmarkCardProps) {
   if (bookmark.status === 'pending') {
-    return <BookmarkCardSkeleton />;
+    return <BookmarkCardSkeleton id={bookmark.id} onDelete={onDelete} />;
   }
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
-      <button
-        type="button"
-        aria-label="Delete bookmark"
-        onClick={() => onDelete(bookmark.id)}
-        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-500 hover:text-red-600"
-      >
-        <Trash2 size={16} />
-      </button>
+      <DeleteButton id={bookmark.id} onDelete={onDelete} />
       {bookmark.image ? (
         <img
           src={bookmark.image}
@@ -46,8 +41,20 @@ function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
           </a>
         </div>
         <div className="text-sm text-gray-600 line-clamp-2">
-          {bookmark.description}
+          {bookmark.status === 'failed'
+            ? "Couldn't load a preview."
+            : bookmark.description}
         </div>
+        {bookmark.status === 'failed' && (
+          <button
+            type="button"
+            onClick={() => onRetry(bookmark.id)}
+            className="relative z-10 inline-flex items-center gap-1 self-start text-sm text-gray-600 underline hover:text-gray-900"
+          >
+            <RefreshCw size={16} />
+            Retry
+          </button>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {bookmark.tags?.map((tag) => (
             <span

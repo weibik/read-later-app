@@ -113,4 +113,33 @@ bookmarks_app.delete('/:id', async (c) => {
   return c.json(deleted, 200);
 });
 
+bookmarks_app.post('/:id/retry', async (c) => {
+  const userId = c.get('userId');
+  const id = parseInt(c.req.param('id'));
+  const [bookmark] = await db
+    .update(bookmarks)
+    .set({ status: 'pending' })
+    .where(
+      and(
+        eq(bookmarks.id, id),
+        eq(bookmarks.userId, userId),
+        eq(bookmarks.status, 'failed'),
+      ),
+    )
+    .returning();
+  if (!bookmark) {
+    return c.json({ message: 'Bookmark not found' }, 404);
+  }
+  await bookmarksQueue.add(
+    'bookmarksQueue',
+    { userId, url: bookmark.url, id: bookmark.id },
+    {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2000 },
+    },
+  );
+  await delCachedBookmarks(userId);
+  return c.json({ ...bookmark, tags: [] });
+});
+
 export default bookmarks_app;
