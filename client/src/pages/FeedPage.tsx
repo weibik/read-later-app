@@ -6,6 +6,7 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import EmptyState from '../components/EmptyState';
 import { useState } from 'react';
 import TagFilter from '../components/TagFilter';
+import BookmarkGridSkeleton from '../components/BookmarkGridSkeleton';
 
 function FeedPage({ logout }: { logout: () => void }) {
   const {
@@ -26,14 +27,16 @@ function FeedPage({ logout }: { logout: () => void }) {
     : bookmarks;
 
   let content: React.ReactNode;
-  if (bookmarks.length === 0 && !isLoading) {
+  if (isLoading) {
+    content = <BookmarkGridSkeleton />;
+  } else if (bookmarks.length === 0) {
     content = (
       <EmptyState
         title="Start your reading list"
         message="Paste a link above to save your first page."
       />
     );
-  } else if (visibleBookmarks.length === 0 && !isLoading) {
+  } else if (visibleBookmarks.length === 0) {
     content = <EmptyState title="No bookmarks with this tag." />;
   } else {
     content = (
