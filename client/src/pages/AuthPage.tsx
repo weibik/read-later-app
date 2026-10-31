@@ -60,45 +60,47 @@ function AuthPage({ login, register }: AuthPageProps) {
   return (
     <div className="bg-gray-50 min-h-screen text-gray-900">
       <PageHeader />
-      <form
-        className="mx-auto mt-10 w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 flex flex-col gap-3"
-        onSubmit={handleSubmit}
-      >
-        <h2 className="text-lg font-medium">{copy[mode].heading}</h2>
-        <TextField
-          id="username"
-          label="Username"
-          value={username}
-          onChange={(v) => {
-            setUsername(v);
-            setError(null);
-          }}
-        />
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(v) => {
-            setPassword(v);
-            setError(null);
-          }}
-        />
-        {error && <ErrorMessage message={error} />}
-        <Button type="submit" className="w-full">
-          {copy[mode].button}
-        </Button>
-        <button
-          type="button"
-          className="text-center text-sm text-gray-600 underline hover:text-gray-900"
-          onClick={() => {
-            setMode(mode === 'login' ? 'register' : 'login');
-            setError(null);
-          }}
+      <div className="px-5">
+        <form
+          className="mx-auto mt-10 w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 flex flex-col gap-3"
+          onSubmit={handleSubmit}
         >
-          {copy[mode].switchText}
-        </button>
-      </form>
+          <h2 className="text-lg font-medium">{copy[mode].heading}</h2>
+          <TextField
+            id="username"
+            label="Username"
+            value={username}
+            onChange={(v) => {
+              setUsername(v);
+              setError(null);
+            }}
+          />
+          <TextField
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(v) => {
+              setPassword(v);
+              setError(null);
+            }}
+          />
+          {error && <ErrorMessage message={error} />}
+          <Button type="submit" className="w-full">
+            {copy[mode].button}
+          </Button>
+          <button
+            type="button"
+            className="text-center text-sm text-gray-600 underline hover:text-gray-900"
+            onClick={() => {
+              setMode(mode === 'login' ? 'register' : 'login');
+              setError(null);
+            }}
+          >
+            {copy[mode].switchText}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

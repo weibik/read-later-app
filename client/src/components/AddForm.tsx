@@ -49,9 +49,11 @@ function AddForm({ onAdd }: AddFormProps) {
             setUrl(e.target.value);
             setError(null);
           }}
-          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
-        <Button type="submit">Save</Button>
+        <Button className="shrink-0" type="submit">
+          Save
+        </Button>
       </form>
       {error && <ErrorMessage message={error} />}
     </div>
