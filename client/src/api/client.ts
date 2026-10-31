@@ -1,5 +1,7 @@
 const API_URL = 'http://localhost:3000';
 
+let onUnauthorized: (() => void) | null = null;
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -25,10 +27,17 @@ export async function api<T>(
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
+    if (response.status === 401 && token) {
+      onUnauthorized?.();
+    }
     throw new ApiError(
       response.status,
       body?.message ?? 'Something went wrong',
     );
   }
   return response.json() as Promise<T>;
+}
+
+export function setOnUnauthorized(fn: () => void) {
+  onUnauthorized = fn;
 }
