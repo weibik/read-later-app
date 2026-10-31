@@ -55,12 +55,16 @@ worker.on('failed', async (job) => {
   if (!job) return;
   if (job.attemptsMade < (job.opts.attempts ?? 1)) return;
 
-  const bookmarkId = parseInt(job.data.id);
-  const userId = parseInt(job.data.userId);
+  try {
+    const bookmarkId = parseInt(job.data.id);
+    const userId = parseInt(job.data.userId);
 
-  await db
-    .update(bookmarks)
-    .set({ status: 'failed' })
-    .where(eq(bookmarks.id, bookmarkId));
-  await delCachedBookmarks(userId);
+    await db
+      .update(bookmarks)
+      .set({ status: 'failed' })
+      .where(eq(bookmarks.id, bookmarkId));
+    await delCachedBookmarks(userId);
+  } catch (error) {
+    console.error('Failed to set row as failed.', error);
+  }
 });
