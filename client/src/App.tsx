@@ -9,7 +9,7 @@ function App() {
 
   useEffect(() => {
     setOnUnauthorized(logout);
-  }, []);
+  }, [logout]);
 
   if (!token) {
     return <AuthPage login={login} register={register} />;

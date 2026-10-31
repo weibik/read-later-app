@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '../api/client';
 
 type LoginAuthResponse = { message: string; jwt: string };
@@ -26,10 +26,10 @@ export function useAuth() {
     await login(username, password);
   }
 
-  function logout() {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setToken(null);
-  }
+  }, []);
 
   return { token, login, register, logout };
 }
