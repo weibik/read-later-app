@@ -11,7 +11,8 @@ type BookmarkCardProps = {
 };
 
 function BookmarkCard({ bookmark, onDelete, onRetry }: BookmarkCardProps) {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const imageFailed = failedSrc !== null && failedSrc === bookmark.image;
 
   if (bookmark.status === 'pending') {
     return <BookmarkCardSkeleton id={bookmark.id} onDelete={onDelete} />;
@@ -25,7 +26,7 @@ function BookmarkCard({ bookmark, onDelete, onRetry }: BookmarkCardProps) {
           src={bookmark.image}
           alt=""
           className="aspect-video w-full object-cover"
-          onError={() => setImageFailed(true)}
+          onError={() => setFailedSrc(bookmark.image)}
         />
       ) : (
         <div className="aspect-video bg-gray-100 flex flex-col items-center justify-center text-gray-500">
