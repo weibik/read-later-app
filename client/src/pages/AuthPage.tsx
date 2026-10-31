@@ -34,6 +34,10 @@ function AuthPage({ login, register }: AuthPageProps) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (username.trim().length === 0 || password.length === 0) {
+      setError('Enter a username and password.');
+      return;
+    }
     try {
       if (mode === 'login') {
         await login(username, password);
