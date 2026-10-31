@@ -13,7 +13,6 @@ function PageHeader({ onLogout }: PageHeaderProps) {
           <Button
             variant="ghost"
             onClick={() => {
-              console.log('clicked');
               onLogout();
             }}
           >

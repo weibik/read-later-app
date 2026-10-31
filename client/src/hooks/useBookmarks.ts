@@ -58,12 +58,15 @@ export function useBookmarks() {
     const removed = bookmarks.find((b) => b.id === id);
     if (!removed) return;
 
+    setError(null);
+
     setBookmarks((prev) => prev.filter((n) => n.id !== id));
     try {
       await api<Bookmark>(`/bookmarks/${id}`, {
         method: 'DELETE',
       });
     } catch {
+      setError('Could not delete. Try again.');
       setBookmarks((prev) => [removed, ...prev]);
     }
   }
@@ -71,6 +74,8 @@ export function useBookmarks() {
   async function retryBookmark(id: number) {
     const bookmark = bookmarks.find((b) => b.id === id);
     if (!bookmark) return;
+
+    setError(null);
 
     const previousStatus = bookmark.status;
     setBookmarks((prev) =>
@@ -80,6 +85,7 @@ export function useBookmarks() {
     try {
       await api(`/bookmarks/${id}/retry`, { method: 'POST' });
     } catch {
+      setError('Could not retry. Try again.');
       setBookmarks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status: previousStatus } : b)),
       );
