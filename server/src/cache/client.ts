@@ -1,4 +1,5 @@
-import { createClient, RedisClientType } from 'redis';
+import type { RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
 const redisClient: RedisClientType = createClient({
   url: 'redis://localhost:6379',

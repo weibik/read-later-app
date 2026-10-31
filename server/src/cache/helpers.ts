@@ -1,5 +1,5 @@
 import redisClient from './client';
-import { bookmarks } from '../db/schema';
+import type { bookmarks } from '../db/schema';
 
 export async function getCachedBookmarks(userId: number) {
   const value = await redisClient.get(`bookmarks:${userId}`);

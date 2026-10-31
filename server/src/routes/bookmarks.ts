@@ -8,7 +8,8 @@ import {
   setCachedBookmarks,
   delCachedBookmarks,
 } from '../cache/helpers';
-import { appVariables } from '../types';
+import type { appVariables } from '../types';
+import { parseBody } from '../utils/parseBody';
 
 const bookmarks_app = new Hono<{ Variables: appVariables }>();
 
@@ -22,11 +23,12 @@ function isValidUrl(value: string) {
 }
 
 bookmarks_app.post('/', async (c) => {
-  const userId = c.get('userId');
-  const { url } = await c.req.json();
-  if (!url) {
-    return c.json({ message: 'Webpage not found' }, 400);
+  const body = await parseBody(c);
+  if (!body || typeof body.url !== 'string') {
+    return c.json({ message: 'Invalid request body.' }, 400);
   }
+  const url = body.url;
+  const userId = c.get('userId');
   if (!isValidUrl(url)) {
     return c.json({ message: 'Invalid URL' }, 400);
   }

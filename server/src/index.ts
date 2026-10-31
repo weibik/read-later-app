@@ -3,7 +3,7 @@ import bookmarks_app from './routes/bookmarks';
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { authMiddleware } from './middleware/middleware';
-import { appVariables } from './types';
+import type { appVariables } from './types';
 import { cors } from 'hono/cors';
 
 const app = new Hono<{ Variables: appVariables }>();

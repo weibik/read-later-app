@@ -4,6 +4,7 @@ import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import * as jose from 'jose';
+import { parseBody } from '../utils/parseBody';
 
 const app_auth = new Hono();
 
@@ -12,7 +13,15 @@ app_auth.get('/healthcheck', (c) => {
 });
 
 app_auth.post('/register', async (c) => {
-  const { username, password } = await c.req.json();
+  const body = await parseBody(c);
+  if (
+    !body ||
+    typeof body.username !== 'string' ||
+    typeof body.password !== 'string'
+  ) {
+    return c.json({ message: 'Invalid request body.' }, 400);
+  }
+  const { username, password } = body;
   const result = await db
     .select()
     .from(users)
@@ -30,7 +39,16 @@ app_auth.post('/register', async (c) => {
 });
 
 app_auth.post('/login', async (c) => {
-  const { username, password } = await c.req.json();
+  const body = await parseBody(c);
+  if (
+    !body ||
+    typeof body.username !== 'string' ||
+    typeof body.password !== 'string'
+  ) {
+    return c.json({ message: 'Invalid request body.' }, 400);
+  }
+
+  const { username, password } = body;
   const user_result = await db
     .select()
     .from(users)
