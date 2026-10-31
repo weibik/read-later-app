@@ -12,16 +12,18 @@ type AuthPageProps = {
 
 const copy: Record<
   'login' | 'register',
-  { heading: string; button: string; switchText: string }
+  { heading: string; button: string; loadingButton: string; switchText: string }
 > = {
   login: {
     heading: 'Log in',
     button: 'Log in',
+    loadingButton: 'Logging in...',
     switchText: 'No account? Register',
   },
   register: {
     heading: 'Create account',
     button: 'Register',
+    loadingButton: 'Registering...',
     switchText: 'Already have an account? Log in',
   },
 };
@@ -31,6 +33,7 @@ function AuthPage({ login, register }: AuthPageProps) {
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,6 +41,7 @@ function AuthPage({ login, register }: AuthPageProps) {
       setError('Enter a username and password.');
       return;
     }
+    setIsSubmitting(true);
     try {
       if (mode === 'login') {
         await login(username, password);
@@ -54,6 +58,8 @@ function AuthPage({ login, register }: AuthPageProps) {
         setError('Something went wrong');
         console.error(err);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -86,8 +92,8 @@ function AuthPage({ login, register }: AuthPageProps) {
             }}
           />
           {error && <ErrorMessage message={error} />}
-          <Button type="submit" className="w-full">
-            {copy[mode].button}
+          <Button disabled={isSubmitting} type="submit" className="w-full">
+            {isSubmitting ? copy[mode].loadingButton : copy[mode].button}
           </Button>
           <button
             type="button"
