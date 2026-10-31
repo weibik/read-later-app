@@ -1,8 +1,8 @@
 import * as jose from 'jose';
 import { createMiddleware } from 'hono/factory';
-import type { Variables } from '../types';
+import type { appVariables } from '../types';
 
-export const authMiddleware = createMiddleware<{ Variables: Variables }>(
+export const authMiddleware = createMiddleware<{ Variables: appVariables }>(
   async (c, next) => {
     const token = c.req.header('Authorization')?.split(' ')[1];
     if (!token) {
@@ -14,6 +14,9 @@ export const authMiddleware = createMiddleware<{ Variables: Variables }>(
         new TextEncoder().encode(process.env.SECRET!),
       );
       const userId = payload['userId'];
+      if (typeof userId !== 'number') {
+        return c.json({ message: 'Authentication was not succesfull' }, 401);
+      }
       c.set('userId', userId);
     } catch {
       return c.json({ message: 'Authentication was not succesfull' }, 401);
