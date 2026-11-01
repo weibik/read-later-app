@@ -5,6 +5,8 @@ import { bookmarks } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { delCachedBookmarks } from '../cache/helpers';
 
+const FETCH_TIMEOUT_MS = 1500;
+
 const worker = new Worker(
   'bookmarksQueue',
   async (job) => {
@@ -13,7 +15,9 @@ const worker = new Worker(
       console.log(`Processing job for bookmark ${id}: ${url}`);
       const userId = parseInt(rawUserId);
       const bookmarkId = parseInt(id);
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch ${url}: ${response.status}`);
       }
