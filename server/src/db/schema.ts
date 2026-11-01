@@ -32,7 +32,7 @@ export const bookmarks = pgTable('bookmarks', {
 
 export const tags = pgTable('tags', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
 });
 
 export const bookmark_tags = pgTable(

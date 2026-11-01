@@ -5,7 +5,7 @@ import { bookmarks } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { delCachedBookmarks } from '../cache/helpers';
 
-const FETCH_TIMEOUT_MS = 1500;
+const FETCH_TIMEOUT_MS = 15000;
 
 const worker = new Worker(
   'bookmarksQueue',
