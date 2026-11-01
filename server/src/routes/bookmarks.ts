@@ -10,6 +10,7 @@ import {
 } from '../cache/helpers';
 import type { appVariables } from '../types';
 import { parseBody } from '../utils/parseBody';
+import { parseTags } from '../utils/parseTags';
 
 const STALE_MS = 10 * 60 * 1000;
 
@@ -52,20 +53,41 @@ bookmarks_app.post('/', async (c) => {
   if (!body || typeof body.url !== 'string') {
     return c.json({ message: 'Invalid request body.' }, 400);
   }
+  const tagNames = parseTags(body.tags);
+  if (tagNames === null) return c.json({ message: 'Invalid tags.' }, 400);
   const url = body.url;
   const userId = c.get('userId');
   if (!isValidUrl(url)) {
     return c.json({ message: 'Invalid URL' }, 400);
   }
 
-  const [bookmark] = await db
-    .insert(bookmarks)
-    .values({
-      url: url,
-      status: 'pending',
-      userId: userId,
-    })
-    .returning();
+  const bookmark = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(bookmarks)
+      .values({ url, status: 'pending', userId })
+      .returning();
+
+    if (tagNames.length > 0) {
+      await tx
+        .insert(tags)
+        .values(tagNames.map((name) => ({ name })))
+        .onConflictDoNothing();
+
+      const tagRows = await tx
+        .select()
+        .from(tags)
+        .where(inArray(tags.name, tagNames));
+
+      await tx
+        .insert(bookmark_tags)
+        .values(
+          tagRows.map((tag) => ({ bookmark_id: row.id, tag_id: tag.id })),
+        );
+    }
+
+    return row;
+  });
+
   await bookmarksQueue.add(
     'bookmarksQueue',
     { userId, url, id: bookmark.id },
@@ -75,7 +97,7 @@ bookmarks_app.post('/', async (c) => {
     },
   );
   await delCachedBookmarks(userId);
-  return c.json({ ...bookmark, tags: [] }, 201);
+  return c.json({ ...bookmark, tags: tagNames }, 201);
 });
 
 bookmarks_app.get('/', async (c) => {
