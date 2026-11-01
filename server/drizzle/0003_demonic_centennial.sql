@@ -1,0 +1,1 @@
+ALTER TABLE "bookmarks" ADD COLUMN "pending_since" timestamp DEFAULT now() NOT NULL;

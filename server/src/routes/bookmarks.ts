@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import db from '../db/db';
 import { bookmarks, tags, bookmark_tags } from '../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import bookmarksQueue from '../queue/queue';
 import {
   getCachedBookmarks,
@@ -11,7 +11,32 @@ import {
 import type { appVariables } from '../types';
 import { parseBody } from '../utils/parseBody';
 
+const STALE_MS = 10 * 60 * 1000;
+
 const bookmarks_app = new Hono<{ Variables: appVariables }>();
+
+async function failStaleBookmarks<
+  T extends { id: number; status: string; pendingSince: Date | string },
+>(userId: number, list: T[]): Promise<T[]> {
+  const staleIds = list
+    .filter(
+      (b) =>
+        b.status === 'pending' &&
+        Date.now() - new Date(b.pendingSince).getTime() > STALE_MS,
+    )
+    .map((b) => b.id);
+  if (staleIds.length === 0) return list;
+  await db
+    .update(bookmarks)
+    .set({ status: 'failed' })
+    .where(
+      and(inArray(bookmarks.id, staleIds), eq(bookmarks.status, 'pending')),
+    );
+  await delCachedBookmarks(userId);
+  return list.map((b) =>
+    staleIds.includes(b.id) ? { ...b, status: 'failed' } : b,
+  );
+}
 
 function isValidUrl(value: string) {
   try {
@@ -57,7 +82,7 @@ bookmarks_app.get('/', async (c) => {
   const userId = c.get('userId');
   const cache = await getCachedBookmarks(userId);
   if (cache) {
-    return c.json(cache, 200);
+    return c.json(await failStaleBookmarks(userId, cache), 200);
   }
   const rows = await db
     .select({
@@ -68,6 +93,7 @@ bookmarks_app.get('/', async (c) => {
       description: bookmarks.description,
       image: bookmarks.image,
       createdAt: bookmarks.createdAt,
+      pendingSince: bookmarks.pendingSince,
       userId: bookmarks.userId,
       tagName: tags.name,
     })
@@ -97,8 +123,9 @@ bookmarks_app.get('/', async (c) => {
   }
   const result = Array.from(grouped.values());
 
-  await setCachedBookmarks(userId, result);
-  return c.json(result, 200);
+  const checked = await failStaleBookmarks(userId, result);
+  await setCachedBookmarks(userId, checked);
+  return c.json(checked, 200);
 });
 
 bookmarks_app.delete('/:id', async (c) => {
@@ -120,7 +147,7 @@ bookmarks_app.post('/:id/retry', async (c) => {
   const id = parseInt(c.req.param('id'));
   const [bookmark] = await db
     .update(bookmarks)
-    .set({ status: 'pending' })
+    .set({ status: 'pending', pendingSince: new Date() })
     .where(
       and(
         eq(bookmarks.id, id),

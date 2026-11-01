@@ -27,6 +27,7 @@ export const bookmarks = pgTable('bookmarks', {
     .notNull()
     .references(() => users.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  pendingSince: timestamp('pending_since').notNull().defaultNow(),
 });
 
 export const tags = pgTable('tags', {
