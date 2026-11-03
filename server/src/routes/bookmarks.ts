@@ -10,7 +10,7 @@ import {
 } from '../cache/helpers';
 import type { appVariables } from '../types';
 import { parseBody } from '../utils/parseBody';
-import { parseTags } from '../utils/parseTags';
+import { isValidUrl } from '../utils/isValidUrl';
 import { isValidUrl } from '../utils/isValidUrl';
 
 const STALE_MS = 10 * 60 * 1000;
@@ -45,7 +45,7 @@ bookmarks_app.post('/', async (c) => {
   if (!body || typeof body.url !== 'string') {
     return c.json({ message: 'Invalid request body.' }, 400);
   }
-  const tagNames = parseTags(body.tags);
+  const tagNames = isValidUrl(body.tags);
   if (tagNames === null) return c.json({ message: 'Invalid tags.' }, 400);
   const url = body.url;
   const userId = c.get('userId');
