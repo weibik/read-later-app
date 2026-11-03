@@ -11,6 +11,7 @@ import {
 import type { appVariables } from '../types';
 import { parseBody } from '../utils/parseBody';
 import { parseTags } from '../utils/parseTags';
+import { isValidUrl } from '../utils/isValidUrl';
 
 const STALE_MS = 10 * 60 * 1000;
 
@@ -37,15 +38,6 @@ async function failStaleBookmarks<
   return list.map((b) =>
     staleIds.includes(b.id) ? { ...b, status: 'failed' } : b,
   );
-}
-
-function isValidUrl(value: string) {
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
 
 bookmarks_app.post('/', async (c) => {
