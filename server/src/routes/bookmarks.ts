@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import db from '../db/db';
 import { bookmarks, tags, bookmark_tags } from '../db/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc, inArray, asc } from 'drizzle-orm';
 import bookmarksQueue from '../queue/queue';
 import {
   getCachedBookmarks,
@@ -123,7 +123,7 @@ bookmarks_app.get('/', async (c) => {
     .leftJoin(bookmark_tags, eq(bookmark_tags.bookmark_id, bookmarks.id))
     .leftJoin(tags, eq(tags.id, bookmark_tags.tag_id))
     .where(eq(bookmarks.userId, userId))
-    .orderBy(desc(bookmarks.createdAt));
+    .orderBy(desc(bookmarks.createdAt), asc(tags.name));
 
   type BookmarkWithTags = Omit<(typeof rows)[number], 'tagName'> & {
     tags: string[];
