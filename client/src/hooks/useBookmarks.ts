@@ -46,10 +46,10 @@ export function useBookmarks() {
     return () => clearInterval(id);
   }, [hasPending]);
 
-  async function addBookmark(url: string) {
+  async function addBookmark(url: string, tags: string[]) {
     const created = await api<Bookmark>('/bookmarks', {
       method: 'POST',
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, tags }),
     });
     setBookmarks((prev) => [created, ...prev]);
   }
