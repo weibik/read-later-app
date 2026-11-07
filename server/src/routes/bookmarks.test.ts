@@ -20,20 +20,25 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+function postBookmark(token: string, body: unknown) {
+  return app.request('/bookmarks', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 describe('POST /bookmarks', () => {
   it('creates a bookmark with tags, enqueues a job and clears the cache', async () => {
     const userId = await createTestUser('test-user');
     const token = await makeToken(userId);
-    const res = await app.request('/bookmarks', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: 'https://example.com',
-        tags: ['react', 'docs'],
-      }),
+
+    const res = await postBookmark(token, {
+      url: 'https://example.com',
+      tags: ['react', 'docs'],
     });
     const body = await res.json();
 
@@ -42,8 +47,8 @@ describe('POST /bookmarks', () => {
     expect(body.url).toBe('https://example.com');
     expect(body.tags).toEqual(['react', 'docs']);
 
-    const bookmarksRows = await db.select().from(bookmarks);
-    expect(bookmarksRows).toHaveLength(1);
+    const bookmarkRows = await db.select().from(bookmarks);
+    expect(bookmarkRows).toHaveLength(1);
 
     const tagRows = await db.select().from(tags);
     expect(tagRows.map((t) => t.name).sort()).toEqual(['docs', 'react']);
@@ -53,7 +58,6 @@ describe('POST /bookmarks', () => {
       { userId, url: 'https://example.com', id: body.id },
       expect.anything(),
     );
-
     expect(delCachedBookmarks).toHaveBeenCalledWith(userId);
   });
 
@@ -68,14 +72,12 @@ describe('POST /bookmarks', () => {
   it('rejects invalid tags with 400 and does not enqueue a job', async () => {
     const userId = await createTestUser('test-user');
     const token = await makeToken(userId);
-    const res = await app.request('/bookmarks', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: 'https://example.com', tags: 'react' }),
+
+    const res = await postBookmark(token, {
+      url: 'https://example.com',
+      tags: 'react',
     });
+
     expect(res.status).toBe(400);
     expect(bookmarksQueue.add).not.toHaveBeenCalled();
   });
@@ -83,14 +85,9 @@ describe('POST /bookmarks', () => {
   it('rejects an invalid URL with 400 and does not enqueue a job', async () => {
     const userId = await createTestUser('test-user');
     const token = await makeToken(userId);
-    const res = await app.request('/bookmarks', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: 'ftp://example.com' }),
-    });
+
+    const res = await postBookmark(token, { url: 'ftp://example.com' });
+
     expect(res.status).toBe(400);
     expect(bookmarksQueue.add).not.toHaveBeenCalled();
   });
@@ -98,24 +95,21 @@ describe('POST /bookmarks', () => {
   it('saving the same tag twice leaves one tags row', async () => {
     const userId = await createTestUser('test-user');
     const token = await makeToken(userId);
-    await app.request('/bookmarks', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: 'https://a.com', tags: ['react'] }),
+
+    const first = await postBookmark(token, {
+      url: 'https://a.com',
+      tags: ['react'],
     });
-    await app.request('/bookmarks', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: 'https://b.com', tags: ['docs'] }),
+    const second = await postBookmark(token, {
+      url: 'https://b.com',
+      tags: ['react'],
     });
+
+    expect(first.status).toBe(201);
+    expect(second.status).toBe(201);
+
     const tagRows = await db.select().from(tags);
-    expect(tagRows).toHaveLength(2);
+    expect(tagRows).toHaveLength(1);
 
     const bookmarkRows = await db.select().from(bookmarks);
     expect(bookmarkRows).toHaveLength(2);
