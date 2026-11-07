@@ -79,4 +79,45 @@ describe('POST /bookmarks', () => {
     expect(res.status).toBe(400);
     expect(bookmarksQueue.add).not.toHaveBeenCalled();
   });
+
+  it('rejects an invalid URL with 400 and does not enqueue a job', async () => {
+    const userId = await createTestUser('test-user');
+    const token = await makeToken(userId);
+    const res = await app.request('/bookmarks', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: 'ftp://example.com' }),
+    });
+    expect(res.status).toBe(400);
+    expect(bookmarksQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('saving the same tag twice leaves one tags row', async () => {
+    const userId = await createTestUser('test-user');
+    const token = await makeToken(userId);
+    await app.request('/bookmarks', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: 'https://a.com', tags: ['react'] }),
+    });
+    await app.request('/bookmarks', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: 'https://b.com', tags: ['docs'] }),
+    });
+    const tagRows = await db.select().from(tags);
+    expect(tagRows).toHaveLength(2);
+
+    const bookmarkRows = await db.select().from(bookmarks);
+    expect(bookmarkRows).toHaveLength(2);
+  });
 });
