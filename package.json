@@ -21,7 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "knip": "knip",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm -r test"
   },
   "lint-staged": {
     "*.{js,mjs,ts,tsx}": [
