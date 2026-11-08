@@ -16,6 +16,7 @@ export default function TagFilter({
           key={tag ?? 'all'}
           type="button"
           onClick={() => onSelect(tag)}
+          aria-pressed={tag === selected}
           className={
             tag === selected
               ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-full border border-indigo-600 bg-indigo-600 px-3 py-1 text-sm text-white'
