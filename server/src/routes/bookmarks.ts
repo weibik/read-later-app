@@ -12,6 +12,7 @@ import type { appVariables } from '../types';
 import { parseBody } from '../utils/parseBody';
 import { isValidUrl } from '../utils/isValidUrl';
 import { parseTags } from '../utils/parseTags';
+import { getStaleIds } from '../utils/staleBookmarks';
 
 const STALE_MS = 10 * 60 * 1000;
 
@@ -20,13 +21,7 @@ const bookmarks_app = new Hono<{ Variables: appVariables }>();
 async function failStaleBookmarks<
   T extends { id: number; status: string; pendingSince: Date | string },
 >(userId: number, list: T[]): Promise<T[]> {
-  const staleIds = list
-    .filter(
-      (b) =>
-        b.status === 'pending' &&
-        Date.now() - new Date(b.pendingSince).getTime() > STALE_MS,
-    )
-    .map((b) => b.id);
+  const staleIds = getStaleIds(list, Date.now(), STALE_MS);
   if (staleIds.length === 0) return list;
   await db
     .update(bookmarks)
