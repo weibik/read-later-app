@@ -16,7 +16,6 @@ vi.mock('../cache/helpers', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // keep test output quiet: the processor logs on every job
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
