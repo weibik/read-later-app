@@ -4,7 +4,11 @@ import db from '../db/db';
 import { bookmarks } from '../db/schema';
 import { createTestUser } from '../test/helpers';
 import { delCachedBookmarks } from '../cache/helpers';
-import { processBookmark, type BookmarkJob } from './processBookmark';
+import {
+  processBookmark,
+  handleFailedJob,
+  type BookmarkJob,
+} from './processBookmark';
 
 vi.mock('../cache/helpers', () => ({
   delCachedBookmarks: vi.fn(),
@@ -12,6 +16,7 @@ vi.mock('../cache/helpers', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // keep test output quiet: the processor logs on every job
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -162,5 +167,78 @@ describe('processBookmark', () => {
 
     const row = await getRow(bookmarkId);
     expect(row.status).toBe('pending');
+  });
+});
+
+describe('handleFailedJob', () => {
+  it('marks the bookmark failed and clears the cache on the final attempt', async () => {
+    const { userId, bookmarkId } = await seedBookmark();
+
+    await handleFailedJob({ ...jobFor(userId, bookmarkId), attemptsMade: 3 });
+
+    const row = await getRow(bookmarkId);
+    expect(row.status).toBe('failed');
+    expect(delCachedBookmarks).toHaveBeenCalledWith(userId);
+  });
+
+  it('leaves the bookmark pending and keeps the cache when retries remain', async () => {
+    const { userId, bookmarkId } = await seedBookmark();
+
+    await handleFailedJob({ ...jobFor(userId, bookmarkId), attemptsMade: 2 });
+
+    const row = await getRow(bookmarkId);
+    expect(row.status).toBe('pending');
+    expect(delCachedBookmarks).not.toHaveBeenCalled();
+  });
+
+  it('treats a job without opts.attempts as a single attempt', async () => {
+    const { userId, bookmarkId } = await seedBookmark();
+
+    await handleFailedJob({
+      ...jobFor(userId, bookmarkId),
+      attemptsMade: 1,
+      opts: {},
+    });
+
+    const row = await getRow(bookmarkId);
+    expect(row.status).toBe('failed');
+  });
+
+  it('does nothing when there is no job', async () => {
+    await handleFailedJob(undefined);
+
+    expect(delCachedBookmarks).not.toHaveBeenCalled();
+  });
+
+  it('handles string ids as they come back from Redis', async () => {
+    const { userId, bookmarkId } = await seedBookmark();
+
+    await handleFailedJob(
+      makeJob({
+        data: {
+          id: String(bookmarkId),
+          userId: String(userId),
+          url: 'https://example.com',
+        },
+        attemptsMade: 3,
+      }),
+    );
+
+    const row = await getRow(bookmarkId);
+    expect(row.status).toBe('failed');
+    expect(delCachedBookmarks).toHaveBeenCalledWith(userId);
+  });
+
+  it('only marks the targeted bookmark as failed', async () => {
+    const { userId, bookmarkId } = await seedBookmark();
+    const [other] = await db
+      .insert(bookmarks)
+      .values({ url: 'https://other.com', userId })
+      .returning();
+
+    await handleFailedJob({ ...jobFor(userId, bookmarkId), attemptsMade: 3 });
+
+    expect((await getRow(bookmarkId)).status).toBe('failed');
+    expect((await getRow(other.id)).status).toBe('pending');
   });
 });
