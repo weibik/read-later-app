@@ -2,6 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import { fixupPluginRules } from '@eslint/compat';
 import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default tseslint.config(
@@ -26,7 +27,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.{js,mjs,cjs}'],
-    extends: [tseslint.configs.disableTypeChecked],
+    files: ['e2e/**/*.{ts,mjs}', 'playwright.config.ts'],
+    languageOptions: { globals: globals.node },
   },
 );
