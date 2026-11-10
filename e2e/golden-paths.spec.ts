@@ -74,3 +74,29 @@ test('clicking a tag chip filters the grid', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Fixture Page' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Second Page' })).toBeVisible();
 });
+
+test('deleting a card removes it, and it stays gone after a reload', async ({
+  page,
+}) => {
+  await registerAndLogin(page);
+
+  await page.getByLabel('URL to save').fill('http://localhost:4000/page.html');
+  await page.getByLabel('Tags, separated by commas').fill('react');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Fixture Page' })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page.getByRole('button', { name: 'Delete bookmark' }).click();
+
+  await expect(
+    page.getByRole('link', { name: 'Fixture Page' }),
+  ).not.toBeVisible();
+  await expect(page.getByText('Start your reading list')).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText('Start your reading list')).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Fixture Page' }),
+  ).not.toBeVisible();
+});
