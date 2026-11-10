@@ -1,3 +1,4 @@
+import { expect, type Page } from '@playwright/test';
 import { Client } from 'pg';
 import { createClient } from 'redis';
 
@@ -15,6 +16,7 @@ export async function resetState() {
       `resetState refused: E2E_REDIS_PORT must be ${EXPECTED_REDIS_PORT}.`,
     );
   }
+
   const pg = new Client({ connectionString: dbUrl });
   const redis = createClient({ socket: { port: Number(redisPort) } });
 
@@ -31,4 +33,13 @@ export async function resetState() {
       await redis.close();
     }
   }
+}
+
+export async function registerAndLogin(page: Page) {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'No account? Register' }).click();
+  await page.getByLabel('Username').fill('e2e-user');
+  await page.getByLabel('Password').fill('e2e-password-123');
+  await page.getByRole('button', { name: 'Register', exact: true }).click();
+  await expect(page.getByText('Start your reading list')).toBeVisible();
 }

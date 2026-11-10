@@ -2,21 +2,35 @@ import http from 'node:http';
 
 const PORT = 4000;
 
-const PAGE = `<!doctype html>
+const PAGES = {
+  '/page.html': {
+    title: 'Fixture Page',
+    description: 'A page served locally for E2E tests.',
+  },
+  '/page2.html': {
+    title: 'Second Page',
+    description: 'A second fixture used by the filter test.',
+  },
+};
+
+function renderPage({ title, description }) {
+  return `<!doctype html>
 <html>
   <head>
-    <title>Fixture Page</title>
-    <meta name="description" content="A page served locally for E2E tests." />
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
     <meta property="og:image" content="http://localhost:${PORT}/image.png" />
   </head>
-  <body><h1>Fixture</h1></body>
+  <body><h1>${title}</h1></body>
 </html>`;
+}
 
 http
   .createServer((req, res) => {
-    if (req.url === '/page.html') {
+    const page = PAGES[req.url];
+    if (page) {
       res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(PAGE);
+      res.end(renderPage(page));
       return;
     }
     res.writeHead(404);
