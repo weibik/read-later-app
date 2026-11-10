@@ -10,10 +10,14 @@ if (!TEST_DATABASE_URL.includes('test')) {
 const API_PORT = 3100;
 const CLIENT_PORT = 5273;
 const FIXTURE_PORT = 4000;
+const REDIS_PORT = '6380';
+
+process.env.E2E_DATABASE_URL = TEST_DATABASE_URL;
+process.env.E2E_REDIS_PORT = REDIS_PORT;
 
 const serverEnv = {
   PORT: String(API_PORT),
-  REDIS_PORT: '6380',
+  REDIS_PORT,
   CORS_ORIGIN: `http://localhost:${CLIENT_PORT}`,
   DATABASE_URL: TEST_DATABASE_URL,
   SECRET: 'test-secret',
